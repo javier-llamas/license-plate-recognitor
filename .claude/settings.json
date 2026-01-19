@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(make test:*)",
+      "Bash(uv run pytest:*)",
+      "Bash(git show:*)",
+      "Bash(make mypy:*)",
+      "Bash(make check:*)"
+    ],
+    "deny": [],
+    "ask": []
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd $CLAUDE_PROJECT_DIR && make check 2>&1 || (echo 'Make check failed. Please review and fix the issues.' >&2 && exit 2)"
+          }
+        ]
+      }
+    ]
+  }
+}

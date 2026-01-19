@@ -1,0 +1,119 @@
+[project]
+name = "license_plate_recognitor"
+version = "0.1.0"
+description = "License plate recognition system for Raspberry Pi 5 with Django, HTMX, and DBOS"
+readme = "README.md"
+requires-python = ">=3.13,<4.0"
+
+# Core dependencies (shared by both web and cv services)
+dependencies = [
+    # Django ORM and database
+    "django>=5.0",
+    "psycopg[binary]>=3.1.0",
+
+    # DBOS for workflow management
+    "dbos>=0.9.0",
+
+    # Image handling
+    "pillow>=10.0.0",
+
+    # HTTP client and logging
+    "httpx>=0.25.0",
+    "logfire>=0.20.0",
+]
+
+[dependency-groups]
+# Web API dependencies (Django Ninja REST API and web server)
+web = [
+    "django-ninja>=1.1.0",
+    "gunicorn>=21.2.0",
+]
+
+# Computer Vision dependencies (camera and license plate detection)
+cv = [
+    "fast-alpr[onnx]>=0.3.0",
+    "opencv-python>=4.8.0",
+    "picamera2>=0.3.0; sys_platform == 'linux'",
+]
+
+# Development dependencies (testing, notebooks)
+dev = [
+    "pillow-heif>=1.1.1",
+    "matplotlib>=3.10.8",
+    "jupyter>=1.0.0",
+    "isort>=5.12.0",
+    "black>=24.9.0",
+    "ruff>=0.0.297",
+    "ty>=0.0.12",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["apps", "cv_worker", "config"]
+
+[tool.isort]
+profile = "black"
+
+[tool.black]
+line-length = 88
+target-version = ['py312']
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+exclude = [
+    "*/tests/*",
+    "*/__pycache__/*",
+    "*/venv/*",
+    "*/.venv/*",
+    "*.pyx",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",        # pycodestyle errors
+    "F",        # pyflakes
+    "PLC0415",  # import-outside-top-level (detects imports inside functions/classes)
+]
+ignore = [
+    "E501",   # line too long (let Black handle line length)
+    "E203",   # whitespace before ':' (conflicts with Black)
+]
+
+[tool.ty.environment]
+python-version = "3.13"
+root = ["."]
+
+[tool.ty.analysis]
+respect-type-ignore-comments = true
+
+[tool.ty.src]
+include = ["apps/**/*.py", "cv_worker/**/*.py", "config/**/*.py"]
+exclude = [
+    "**/tests/**",
+    "**/__pycache__/**",
+    "**/venv/**",
+    "**/.venv/**",
+    "*/migrations/*",
+]
+respect-ignore-files = true
+
+[tool.ty.terminal]
+output-format = "concise"
+error-on-warning = false
+
+[tool.ty.rules]
+# Ignore unresolved imports from third-party libraries without type stubs
+unresolved-import = "ignore"
+# Ignore Django's dynamic attributes (like Model.objects)
+unresolved-attribute = "ignore"
+# Treat type errors as errors that fail the build
+invalid-parameter-default = "error"
+unknown-argument = "error"
+invalid-argument-type = "error"
+parameter-already-assigned = "error"
+too-many-positional-arguments = "error"
+not-subscriptable = "error"

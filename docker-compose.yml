@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: license_plate_db
+      POSTGRES_USER: lpr_user
+      POSTGRES_PASSWORD: lpr_password
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lpr_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/web.Dockerfile
+    command: >
+      sh -c "/app/scripts/init-databases.sh &&
+             python manage.py migrate &&
+             gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2"
+    volumes:
+      - .:/app
+      - media_data:/app/media
+    ports:
+      - "8000:8000"
+    environment:
+      # Django database (application data)
+      - POSTGRES_DB=license_plate_db
+      - POSTGRES_USER=lpr_user
+      - POSTGRES_PASSWORD=lpr_password
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - DJANGO_SETTINGS_MODULE=config.settings.production
+      - DJANGO_SECRET_KEY=change-this-in-production-please
+      # DBOS system database (workflow state) - uses same PostgreSQL instance
+      - DBOS_DATABASE_URL=postgresql://lpr_user:lpr_password@db:5432/dbos_system
+      - DATABASE_URL=postgresql://lpr_user:lpr_password@db:5432/license_plate_db
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  cv:
+    build:
+      context: .
+      dockerfile: docker/cv.Dockerfile
+    privileged: true
+    devices:
+      - /dev/video0:/dev/video0
+    volumes:
+      - .:/app
+      - media_data:/app/media
+    environment:
+      # Django database (for ORM access to DetectionResult, TrainingShot, etc.)
+      - POSTGRES_DB=license_plate_db
+      - POSTGRES_USER=lpr_user
+      - POSTGRES_PASSWORD=lpr_password
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - DJANGO_SETTINGS_MODULE=config.settings.production
+      # DBOS system database (workflow state management)
+      - DBOS_POSTGRES_HOST=db
+      - DBOS_POSTGRES_PORT=5432
+      - DBOS_POSTGRES_USER=lpr_user
+      - DBOS_POSTGRES_PASSWORD=lpr_password
+      - DBOS_POSTGRES_DB=dbos_system
+      # Connection URLs for DBOS config
+      - DBOS_DATABASE_URL=postgresql://lpr_user:lpr_password@db:5432/dbos_system
+      - DATABASE_URL=postgresql://lpr_user:lpr_password@db:5432/license_plate_db
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    command: python cv_worker/main.py
+
+volumes:
+  db_data:
+  media_data:

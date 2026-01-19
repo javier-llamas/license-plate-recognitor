@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Home - License Plate Recognition{% endblock %}
+
+{% block content %}
+<h2>Detection Control</h2>
+
+<div class="controls">
+    <button hx-post="/take-test-shot/" hx-swap="innerHTML" hx-target="body">
+        Take Test Shot
+    </button>
+
+    {% if is_running %}
+        <button class="danger" hx-post="/toggle-detection/" hx-swap="outerHTML">
+            Stop
+        </button>
+        <span class="status running">Running</span>
+    {% else %}
+        <button class="success" hx-post="/toggle-detection/" hx-swap="outerHTML">
+            Start
+        </button>
+        <span class="status stopped">Stopped</span>
+    {% endif %}
+
+    <button onclick="window.location.href='/evaluate'">
+        Evaluate
+    </button>
+</div>
+
+{% if current_job %}
+<div class="results">
+    <h3>Recent Detection Results</h3>
+    {% if recent_results %}
+        {% for result in recent_results %}
+        <div class="result-item">
+            <strong>{{ result.plate_text|default:"No plate detected" }}</strong>
+            {% if result.confidence %}
+            - Confidence: {{ result.confidence|floatformat:2 }}
+            {% endif %}
+            <br>
+            <small>{{ result.created_at|date:"Y-m-d H:i:s" }} - {{ result.camera_model }}</small>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>No results yet. Detection is running...</p>
+    {% endif %}
+</div>
+{% endif %}
+
+{% if not is_running and not current_job %}
+<div style="margin-top: 30px; padding: 20px; background: #e7f3ff; border-radius: 8px;">
+    <h3>Getting Started</h3>
+    <p>Click "Take Test Shot" to capture a single image, or "Start" to begin continuous detection.</p>
+</div>
+{% endif %}
+
+{% endblock %}

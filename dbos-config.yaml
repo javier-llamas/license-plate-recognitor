@@ -1,0 +1,18 @@
+## DBOS Configuration for License Plate Recognition CV Worker
+## See: https://docs.dbos.dev/python/reference/configuration
+
+name: lpr-cv-worker
+language: python
+
+# DBOS system database - where DBOS stores workflow state and execution history
+# DBOS will automatically create its own tables in this database
+system_database_url: postgresql://${DBOS_POSTGRES_USER}:${DBOS_POSTGRES_PASSWORD}@${DBOS_POSTGRES_HOST}:${DBOS_POSTGRES_PORT}/${DBOS_POSTGRES_DB}
+
+# Application database - the Django database for DetectionResult, TrainingShot, etc.
+# This is optional but allows DBOS transactions to access Django models
+database_url: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+
+# Runtime configuration for local development and DBOS Cloud
+runtimeConfig:
+  # Command to start the CV worker
+  start: python cv_worker/main.py

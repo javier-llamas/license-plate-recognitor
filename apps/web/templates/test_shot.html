@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Test Shot - License Plate Recognition{% endblock %}
+
+{% block content %}
+<h2>Test Shot</h2>
+
+<div style="margin: 20px 0;">
+    <img src="{{ image_url }}" alt="Test shot">
+</div>
+
+<div class="controls">
+    <button hx-post="/take-test-shot/" hx-swap="innerHTML" hx-target="body">
+        Take Another
+    </button>
+    <button onclick="window.location.href='/'">
+        Back to Home
+    </button>
+</div>
+
+<div style="margin-top: 20px; color: #666;">
+    <small>Captured at: {{ test_shot.created_at|date:"Y-m-d H:i:s" }}</small>
+</div>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Evaluate - License Plate Recognition{% endblock %}
+
+{% block content %}
+<h2>Evaluate Training Shots</h2>
+
+{% if shot %}
+<div style="margin: 20px 0;">
+    <img src="{{ image_url }}" alt="Training shot">
+</div>
+
+<div style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 6px;">
+    <strong>Inferred Text:</strong> {{ shot.inferred_text|default:"No text detected" }}
+</div>
+
+<div class="controls">
+    <button class="success" onclick="verifyShot({{ shot.id }}, true)">
+        ✓ Accurate
+    </button>
+    <button class="danger" onclick="showCorrectionInput()">
+        ✗ Inaccurate
+    </button>
+</div>
+
+<div id="correction-input" style="display: none; margin-top: 20px;">
+    <div class="input-group">
+        <label for="actual-text">Enter Correct Text:</label>
+        <input type="text" id="actual-text" placeholder="Enter the actual license plate text">
+    </div>
+    <button onclick="verifyShot({{ shot.id }}, false, document.getElementById('actual-text').value)">
+        Submit Correction
+    </button>
+    <button onclick="hideCorrectionInput()">
+        Cancel
+    </button>
+</div>
+
+<script>
+function showCorrectionInput() {
+    document.getElementById('correction-input').style.display = 'block';
+}
+
+function hideCorrectionInput() {
+    document.getElementById('correction-input').style.display = 'none';
+    document.getElementById('actual-text').value = '';
+}
+
+async function verifyShot(shotId, isAccurate, actualText = null) {
+    const payload = {
+        is_accurate: isAccurate,
+        actual_text: actualText
+    };
+
+    try {
+        const response = await fetch(`/api/training-shots/${shotId}/verify`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+            // Reload page to show next shot
+            window.location.reload();
+        } else {
+            alert('Error verifying shot');
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+}
+</script>
+
+{% else %}
+<div style="padding: 40px; text-align: center; background: #e7f3ff; border-radius: 8px;">
+    <h3>No Shots to Evaluate</h3>
+    <p>All training shots have been verified!</p>
+    <button onclick="window.location.href='/'">Back to Home</button>
+</div>
+{% endif %}
+
+{% endblock %}
