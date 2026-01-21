@@ -8,51 +8,27 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-# Try to import picamera2, fall back to mock for development
-try:
-    from picamera2 import Picamera2
-    PICAMERA_AVAILABLE = True
-except ImportError:
-    PICAMERA_AVAILABLE = False
-    print("Warning: picamera2 not available. Using mock camera for development.")
+from picamera2 import Picamera2
 
 
 class Camera:
     """Camera interface for capturing images."""
 
     def __init__(self):
-        self.camera = None
-        self.camera_model = "Unknown"
-
-        if PICAMERA_AVAILABLE:
-            try:
-                self.camera = Picamera2()
-                config = self.camera.create_still_configuration()
-                self.camera.configure(config)
-                self.camera.start()
-                self.camera_model = "Raspberry Pi Camera"
-                print("Picamera2 initialized successfully")
-            except Exception as e:
-                print(f"Error initializing picamera2: {e}")
-                self.camera = None
-        else:
-            print("Using mock camera (picamera2 not available)")
+        self.camera = Picamera2()
+        config = self.camera.create_still_configuration()
+        self.camera.configure(config)
+        self.camera.start()
+        self.camera_model = "Raspberry Pi Camera"
 
     def capture_image(self) -> np.ndarray:
         """
         Capture an image and return as numpy array.
         Returns RGB image array.
         """
-        if self.camera and PICAMERA_AVAILABLE:
-            try:
-                # Capture as numpy array
-                array = self.camera.capture_array()
-                return array
-            except Exception as e:
-                print(f"Error capturing image: {e}")
-                return self._create_mock_image()
-        else:
-            return self._create_mock_image()
+        # Capture as numpy array
+        array = self.camera.capture_array()
+        return array
 
     def _create_mock_image(self) -> np.ndarray:
         """Create a mock image for development/testing."""
@@ -108,12 +84,8 @@ class Camera:
 
     def cleanup(self):
         """Clean up camera resources."""
-        if self.camera and PICAMERA_AVAILABLE:
-            try:
-                self.camera.stop()
-                self.camera.close()
-            except Exception as e:
-                print(f"Error cleaning up camera: {e}")
+        self.camera.stop()
+        self.camera.close()
 
 
 # Global camera instance
