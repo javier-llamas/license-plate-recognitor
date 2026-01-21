@@ -44,7 +44,8 @@ dev = [
     "isort>=5.12.0",
     "black>=24.9.0",
     "ruff>=0.0.297",
-    "ty>=0.0.12",
+    "mypy>=1.8.0",
+    "django-stubs>=4.2.7",
 ]
 
 [build-system]
@@ -83,37 +84,34 @@ ignore = [
     "E203",   # whitespace before ':' (conflicts with Black)
 ]
 
-[tool.ty.environment]
-python-version = "3.13"
-root = ["."]
+[tool.mypy]
+python_version = "3.13"
+warn_return_any = false
+warn_unused_configs = true
+disallow_untyped_defs = false
+ignore_missing_imports = true
+check_untyped_defs = false
+strict_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = false
+warn_no_return = true
+warn_unreachable = true
 
-[tool.ty.analysis]
-respect-type-ignore-comments = true
+# Django-specific settings
+plugins = ["mypy_django_plugin.main"]
 
-[tool.ty.src]
-include = ["apps/**/*.py", "cv_worker/**/*.py", "config/**/*.py"]
+# Paths to check
+mypy_path = "apps:cv_worker:config"
+files = ["apps", "cv_worker", "config"]
+
+# Exclude patterns
 exclude = [
-    "**/tests/**",
-    "**/__pycache__/**",
-    "**/venv/**",
-    "**/.venv/**",
-    "*/migrations/*",
+    "^.*/tests/.*$",
+    "^.*/__pycache__/.*$",
+    "^.*/venv/.*$",
+    "^.*/.venv/.*$",
+    "^.*/migrations/.*$",
 ]
-respect-ignore-files = true
 
-[tool.ty.terminal]
-output-format = "concise"
-error-on-warning = false
-
-[tool.ty.rules]
-# Ignore unresolved imports from third-party libraries without type stubs
-unresolved-import = "ignore"
-# Ignore Django's dynamic attributes (like Model.objects)
-unresolved-attribute = "ignore"
-# Treat type errors as errors that fail the build
-invalid-parameter-default = "error"
-unknown-argument = "error"
-invalid-argument-type = "error"
-parameter-already-assigned = "error"
-too-many-positional-arguments = "error"
-not-subscriptable = "error"
+[tool.django-stubs]
+django_settings_module = "config.settings.local"

@@ -25,7 +25,7 @@ def get_next_unverified(request):
         return None
 
     return TrainingShotResponse(
-        id=shot.id,
+        id=shot.pk,
         image_url=f"{settings.MEDIA_URL}{shot.image_path}",
         inferred_text=shot.inferred_text,
     )
@@ -44,4 +44,4 @@ def verify_training_shot(request, shot_id: int, payload: TrainingShotVerifyReque
 
     shot.save()
 
-    return TrainingShotVerifyResponse(id=shot.id, is_verified=True)
+    return TrainingShotVerifyResponse(id=shot.pk, is_verified=True)

@@ -6,6 +6,7 @@ DBOS manages workflow state in its own system tables.
 """
 
 import os
+from typing import TYPE_CHECKING
 
 from dbos import DBOSClient, EnqueueOptions
 from ninja import Router
@@ -17,7 +18,12 @@ from apps.api.schemas import (
 )
 from apps.core.models import DetectionResult
 
+if TYPE_CHECKING:
+    from dbos import WorkflowHandle
+    from django.http import HttpRequest
+
 router = Router()
+
 
 # Initialize DBOS client for workflow management
 # This connects to the DBOS system database where workflow state is stored
@@ -25,7 +31,9 @@ dbos_client = DBOSClient(system_database_url=os.environ.get("DBOS_DATABASE_URL")
 
 
 @router.post("/start", response=DetectionJobStartResponse)
-def start_detection(request):
+def start_detection(
+    request: "HttpRequest",
+) -> tuple[dict[str, str], int] | DetectionJobStartResponse:
     """Start a detection job via DBOS workflow."""
     try:
         # Check if there's already a running detection workflow
@@ -42,7 +50,7 @@ def start_detection(request):
             "workflow_name": "start_detection_workflow",
             "queue_name": "detection_queue",
         }
-        handle = dbos_client.enqueue(options)
+        handle: "WorkflowHandle" = dbos_client.enqueue(options)
 
         workflow_id = handle.get_workflow_id()
 
@@ -52,7 +60,9 @@ def start_detection(request):
 
 
 @router.post("/stop", response=DetectionJobStopResponse)
-def stop_detection(request):
+def stop_detection(
+    request: "HttpRequest",
+) -> tuple[dict[str, str], int] | DetectionJobStopResponse:
     """Stop the currently running detection job."""
     try:
         # Find the running detection workflow
@@ -74,7 +84,9 @@ def stop_detection(request):
 
 
 @router.get("/status", response=DetectionJobStatusResponse)
-def get_detection_status(request):
+def get_detection_status(
+    request: "HttpRequest",
+) -> tuple[dict[str, str], int] | DetectionJobStatusResponse:
     """Get current detection job status."""
     try:
         # Query DBOS for running detection workflows

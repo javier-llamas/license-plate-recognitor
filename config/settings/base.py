@@ -4,6 +4,11 @@ Base settings for license plate recognition system.
 import os
 from pathlib import Path
 
+import django_stubs_ext
+
+# Monkeypatch Django to enable better type checking support
+django_stubs_ext.monkeypatch()
+
 # Build paths inside the project
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 

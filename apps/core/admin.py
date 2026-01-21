@@ -4,7 +4,7 @@ Django admin configuration for core models.
 
 from django.contrib import admin
 
-from .models import DetectionJob, DetectionResult, TestShot, TrainingShot
+from .models import DetectionResult, TestShot, TrainingShot
 
 
 @admin.register(TestShot)
@@ -14,26 +14,19 @@ class TestShotAdmin(admin.ModelAdmin):
     readonly_fields = ["created_at"]
 
 
-@admin.register(DetectionJob)
-class DetectionJobAdmin(admin.ModelAdmin):
-    list_display = ["id", "status", "started_at", "stopped_at", "workflow_id"]
-    list_filter = ["status", "started_at"]
-    readonly_fields = ["started_at", "stopped_at"]
-
-
 @admin.register(DetectionResult)
 class DetectionResultAdmin(admin.ModelAdmin):
     list_display = [
         "id",
-        "job",
+        "workflow_id",
         "plate_text",
         "confidence",
         "camera_model",
         "created_at",
     ]
-    list_filter = ["created_at", "job"]
+    list_filter = ["created_at", "workflow_id"]
     readonly_fields = ["created_at"]
-    search_fields = ["plate_text"]
+    search_fields = ["plate_text", "workflow_id"]
 
 
 @admin.register(TrainingShot)

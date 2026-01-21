@@ -3,6 +3,7 @@ HTMX views for the web interface.
 """
 
 import os
+from typing import TYPE_CHECKING
 
 from dbos import DBOSClient, EnqueueOptions
 from django.conf import settings
@@ -11,11 +12,15 @@ from django.shortcuts import get_object_or_404, render
 
 from apps.core.models import DetectionResult, TestShot, TrainingShot
 
+if TYPE_CHECKING:
+    from dbos import WorkflowHandle
+    from django.http import HttpRequest
+
 # Initialize DBOS client for workflow management
 dbos_client = DBOSClient(system_database_url=os.environ.get("DBOS_DATABASE_URL"))
 
 
-def home(request):
+def home(request: "HttpRequest") -> HttpResponse:
     """Home page with detection job controls."""
     # Check DBOS for running detection workflows
     running_workflows = dbos_client.list_workflows(
@@ -23,7 +28,7 @@ def home(request):
     )
 
     is_running = len(running_workflows) > 0
-    recent_results = []
+    recent_results = None
     workflow_id = None
 
     if is_running:
@@ -40,7 +45,7 @@ def home(request):
     return render(request, "home.html", context)
 
 
-def test_shot_page(request, test_shot_id):
+def test_shot_page(request: "HttpRequest", test_shot_id: int) -> HttpResponse:
     """Display a test shot."""
     test_shot = get_object_or_404(TestShot, id=test_shot_id)
     context = {
@@ -50,11 +55,11 @@ def test_shot_page(request, test_shot_id):
     return render(request, "test_shot.html", context)
 
 
-def evaluate_page(request):
+def evaluate_page(request: "HttpRequest") -> HttpResponse:
     """Evaluation page for training shots."""
     shot = TrainingShot.objects.filter(is_verified=False).first()
 
-    context = {
+    context: dict[str, TrainingShot | None | str] = {
         "shot": shot,
     }
 
@@ -65,7 +70,7 @@ def evaluate_page(request):
 
 
 # HTMX partial views
-def take_test_shot(request):
+def take_test_shot(request: "HttpRequest") -> HttpResponse:
     """HTMX endpoint to trigger test shot."""
     try:
         # Start test shot workflow via DBOS client
@@ -73,7 +78,7 @@ def take_test_shot(request):
             "workflow_name": "test_shot_workflow",
             "queue_name": "test_shot_queue",
         }
-        handle = dbos_client.enqueue(options)
+        handle: "WorkflowHandle" = dbos_client.enqueue(options)
 
         # Wait for result (test shots are quick)
         test_shot_id = handle.get_result()
@@ -86,7 +91,7 @@ def take_test_shot(request):
         return HttpResponse(f'<div class="error">Error: {str(e)}</div>')
 
 
-def toggle_detection(request):
+def toggle_detection(request: "HttpRequest") -> HttpResponse:
     """HTMX endpoint to start/stop detection."""
     # Check for running detection workflows
     running_workflows = dbos_client.list_workflows(

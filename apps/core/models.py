@@ -17,7 +17,7 @@ class TestShot(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"TestShot {self.id} - {self.created_at}"
+        return f"TestShot {self.pk} - {self.created_at}"
 
 
 class DetectionResult(models.Model):
@@ -39,7 +39,7 @@ class DetectionResult(models.Model):
         ]
 
     def __str__(self):
-        return f"Detection {self.id} - {self.plate_text or 'No plate'}"
+        return f"Detection {self.pk} - {self.plate_text or 'No plate'}"
 
 
 class TrainingShot(models.Model):
@@ -65,4 +65,4 @@ class TrainingShot(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"TrainingShot {self.id} - {'Verified' if self.is_verified else 'Unverified'}"
+        return f"TrainingShot {self.pk} - {'Verified' if self.is_verified else 'Unverified'}"

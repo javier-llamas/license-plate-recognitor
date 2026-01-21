@@ -10,10 +10,10 @@ black:
 	@echo "Formatting code..."
 	@uv run black apps cv_worker
 
-ty:
+mypy:
 	@echo "Running type checker..."
-	@uv run ty check
+	@uv run mypy
 
 # Run all quality checks
-check: isort black lint ty
+check: isort black lint mypy
 	@echo "All checks passed"

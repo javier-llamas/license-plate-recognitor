@@ -25,7 +25,9 @@ class PlateDetector:
             print(f"Error initializing fast_alpr: {e}")
             self.alpr = None
 
-    def detect(self, image: np.ndarray) -> Tuple[Optional[str], Optional[float]]:
+    def detect(
+        self, image: np.ndarray
+    ) -> Tuple[Optional[str], float | list[float] | None]:
         """
         Detect license plate in image.
         Returns (plate_text, confidence) or (None, None) if no plate detected.
@@ -37,6 +39,7 @@ class PlateDetector:
                 if results and len(results) > 0:
                     # Get the first (highest confidence) result
                     top_result = results[0]
+                    assert top_result.ocr is not None
                     plate_text = top_result.ocr.text
                     confidence = top_result.ocr.confidence
 

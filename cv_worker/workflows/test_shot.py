@@ -38,6 +38,6 @@ def capture_test_shot() -> int:
     # Create database record
     test_shot = TestShot.objects.create(image_path=image_path)
 
-    logfire.info(f"Test shot captured: {test_shot.id} at {image_path}")
+    logfire.info(f"Test shot captured: {test_shot.pk} at {image_path}")
 
-    return test_shot.id
+    return test_shot.pk
