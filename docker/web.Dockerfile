@@ -17,6 +17,7 @@ COPY pyproject.toml uv.lock* ./
 
 # Install core dependencies + web group using uv sync
 # --no-dev excludes dev dependencies, --group web includes the web dependency group
+COPY README.md .
 RUN uv sync --no-dev --group web
 
 # Copy application code

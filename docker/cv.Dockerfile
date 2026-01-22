@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y \
     g++ \
     libcamera-dev \
     libopencv-dev \
-    libatlas-base-dev \
+    libcap-dev \
     python3-opencv \
     git \
     wget \
@@ -24,7 +24,9 @@ COPY pyproject.toml uv.lock* ./
 # Install core dependencies + cv group using uv sync
 # --no-dev excludes dev dependencies, --group cv includes the cv dependency group
 # picamera2 will be installed automatically on Linux via platform marker
-RUN uv sync --no-dev --group cv
+# RUN uv sync --no-dev --group cv
+COPY README.md .
+RUN uv sync --all-groups
 
 # Copy application code
 COPY . .
