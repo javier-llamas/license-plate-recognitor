@@ -12,7 +12,7 @@ services:
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U lpr_user"]
+      test: ["CMD-SHELL", "pg_isready -U lpr_user -d postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -24,10 +24,11 @@ services:
       dockerfile: docker/web.Dockerfile
     command: >
       sh -c "/app/scripts/init-databases.sh &&
-             python manage.py migrate &&
-             gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2"
+             uv run python manage.py migrate &&
+             uv run gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2"
     volumes:
       - .:/app
+      - /app/.venv  # Anonymous volume to prevent host .venv from mounting
       - media_data:/app/media
     ports:
       - "8000:8000"
@@ -38,7 +39,7 @@ services:
       - POSTGRES_PASSWORD=lpr_password
       - POSTGRES_HOST=db
       - POSTGRES_PORT=5432
-      - DJANGO_SETTINGS_MODULE=config.settings.production
+      - DJANGO_SETTINGS_MODULE=config.settings.local
       - DJANGO_SECRET_KEY=change-this-in-production-please
       # DBOS system database (workflow state) - uses same PostgreSQL instance
       - DBOS_DATABASE_URL=postgresql://lpr_user:lpr_password@db:5432/dbos_system
@@ -57,6 +58,7 @@ services:
       - /dev/video0:/dev/video0
     volumes:
       - .:/app
+      - /app/.venv  # Anonymous volume to prevent host .venv from mounting
       - media_data:/app/media
     environment:
       # Django database (for ORM access to DetectionResult, TrainingShot, etc.)
@@ -78,8 +80,10 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      web:
+        condition: service_started
     restart: unless-stopped
-    command: python cv_worker/main.py
+    command: uv run python cv_worker/main.py
 
 volumes:
   db_data:

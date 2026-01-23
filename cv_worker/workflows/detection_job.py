@@ -5,14 +5,17 @@ DBOS manages workflow state in its own system tables.
 Each detection is a separate step, allowing DBOS to cancel between iterations.
 """
 
+import logging
 import time
 
-import logfire
+# import logfire
 from dbos import DBOS
 
 from apps.core.models import DetectionResult, TrainingShot
 from cv_worker.camera import get_camera
 from cv_worker.detector import get_detector
+
+logfire = logging.getLogger(__name__)
 
 
 @DBOS.workflow()

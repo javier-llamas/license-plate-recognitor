@@ -35,7 +35,7 @@ COPY . .
 RUN mkdir -p /app/media/test_shots /app/media/detections /app/media/training
 
 # Set Python path to include the project root
-ENV PYTHONPATH=/app:$PYTHONPATH
+# ENV PYTHONPATH=/app:$PYTHONPATH
 
 # No exposed port - DBOS worker communicates via database, not HTTP
 CMD ["python", "cv_worker/main.py"]
