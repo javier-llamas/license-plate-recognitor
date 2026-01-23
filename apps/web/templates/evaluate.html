@@ -52,11 +52,15 @@ async function verifyShot(shotId, isAccurate, actualText = null) {
         actual_text: actualText
     };
 
+    // Get CSRF token from meta tag
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
     try {
         const response = await fetch(`/api/training-shots/${shotId}/verify`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
             },
             body: JSON.stringify(payload)
         });
