@@ -18,7 +18,7 @@ from cv_worker.detector import get_detector
 logfire = logging.getLogger(__name__)
 
 
-@DBOS.workflow()
+@DBOS.workflow(name="start_detection_workflow")
 def start_detection_workflow():
     """
     Start a continuous detection workflow.

@@ -4,6 +4,7 @@ HTMX views for the web interface.
 
 import os
 from typing import TYPE_CHECKING
+import logging
 
 from dbos import DBOSClient, EnqueueOptions
 from django.conf import settings
@@ -11,10 +12,13 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
 
 from apps.core.models import DetectionResult, TestShot, TrainingShot
+from cv_worker.workflows.test_shot import test_shot_workflow
 
 if TYPE_CHECKING:
     from dbos import WorkflowHandle
     from django.http import HttpRequest
+
+logger = logging.getLogger(__name__)
 
 # Initialize DBOS client for workflow management
 dbos_client = DBOSClient(system_database_url=os.environ.get("DBOS_DATABASE_URL"))
@@ -78,14 +82,16 @@ def take_test_shot(request: "HttpRequest") -> HttpResponse:
             "workflow_name": "test_shot_workflow",
             "queue_name": "test_shot_queue",
         }
-        handle: "WorkflowHandle" = dbos_client.enqueue(options)
+        shot_d = test_shot_workflow()
 
         # Wait for result (test shots are quick)
-        test_shot_id = handle.get_result()
+        # logger.info(f"Waiting for test shot workflow: {handle.workflow_id}")
+        logger.info(f"DBOS System DB URL: {os.environ.get('DBOS_DATABASE_URL')}")
+        # test_shot_id = handle
 
         # Return HTML snippet to redirect
         return HttpResponse(
-            f'<script>window.location.href="/test-shot/{test_shot_id}";</script>'
+            f'<script>window.location.href="/test-shot/{shot_d}";</script>'
         )
     except Exception as e:
         return HttpResponse(f'<div class="error">Error: {str(e)}</div>')

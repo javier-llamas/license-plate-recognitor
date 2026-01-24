@@ -2,11 +2,14 @@
 Test shot workflow - captures a single image on demand.
 """
 
-import logfire
+# import logfire
+import logging
 from dbos import DBOS
 
 from apps.core.models import TestShot
 from cv_worker.camera import get_camera
+
+logfire = logging.getLogger(__name__)
 
 
 @DBOS.workflow()
@@ -30,6 +33,8 @@ def capture_test_shot() -> int:
     Step to capture and save a test shot.
     Returns the TestShot ID.
     """
+    logfire.info("Capturing test shot")
+
     camera = get_camera()
 
     # Capture and save image

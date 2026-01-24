@@ -49,41 +49,41 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
-  cv:
-    build:
-      context: .
-      dockerfile: docker/cv.Dockerfile
-    privileged: true
-    devices:
-      - /dev/video0:/dev/video0
-    volumes:
-      - .:/app
-      - /app/.venv  # Anonymous volume to prevent host .venv from mounting
-      - media_data:/app/media
-    environment:
-      # Django database (for ORM access to DetectionResult, TrainingShot, etc.)
-      - POSTGRES_DB=license_plate_db
-      - POSTGRES_USER=lpr_user
-      - POSTGRES_PASSWORD=lpr_password
-      - POSTGRES_HOST=db
-      - POSTGRES_PORT=5432
-      - DJANGO_SETTINGS_MODULE=config.settings.production
-      # DBOS system database (workflow state management)
-      - DBOS_POSTGRES_HOST=db
-      - DBOS_POSTGRES_PORT=5432
-      - DBOS_POSTGRES_USER=lpr_user
-      - DBOS_POSTGRES_PASSWORD=lpr_password
-      - DBOS_POSTGRES_DB=dbos_system
-      # Connection URLs for DBOS config
-      - DBOS_DATABASE_URL=postgresql://lpr_user:lpr_password@db:5432/dbos_system
-      - DATABASE_URL=postgresql://lpr_user:lpr_password@db:5432/license_plate_db
-    depends_on:
-      db:
-        condition: service_healthy
-      web:
-        condition: service_started
-    restart: unless-stopped
-    command: uv run python cv_worker/main.py
+  # cv:
+  #   build:
+  #     context: .
+  #     dockerfile: docker/cv.Dockerfile
+  #   privileged: true
+  #   devices:
+  #     - /dev/video0:/dev/video0
+  #   volumes:
+  #     - .:/app
+  #     - /app/.venv  # Anonymous volume to prevent host .venv from mounting
+  #     - media_data:/app/media
+  #   environment:
+  #     # Django database (for ORM access to DetectionResult, TrainingShot, etc.)
+  #     - POSTGRES_DB=license_plate_db
+  #     - POSTGRES_USER=lpr_user
+  #     - POSTGRES_PASSWORD=lpr_password
+  #     - POSTGRES_HOST=db
+  #     - POSTGRES_PORT=5432
+  #     - DJANGO_SETTINGS_MODULE=config.settings.production
+  #     # DBOS system database (workflow state management)
+  #     - DBOS_POSTGRES_HOST=db
+  #     - DBOS_POSTGRES_PORT=5432
+  #     - DBOS_POSTGRES_USER=lpr_user
+  #     - DBOS_POSTGRES_PASSWORD=lpr_password
+  #     - DBOS_POSTGRES_DB=dbos_system
+  #     # Connection URLs for DBOS config
+  #     - DBOS_DATABASE_URL=postgresql://lpr_user:lpr_password@db:5432/dbos_system
+  #     - DATABASE_URL=postgresql://lpr_user:lpr_password@db:5432/license_plate_db
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #     web:
+  #       condition: service_started
+  #   restart: unless-stopped
+  #   command: uv run python cv_worker/main.py
 
 volumes:
   db_data:

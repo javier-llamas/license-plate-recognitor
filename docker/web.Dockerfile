@@ -7,6 +7,13 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     postgresql-client \
     gcc \
+    g++ \
+    libcamera-dev \
+    libopencv-dev \
+    libcap-dev \
+    python3-opencv \
+    git \
+    wget \
     && rm -rf /var/lib/apt/lists/*
 
 # Install uv for faster dependency installation
@@ -18,7 +25,7 @@ COPY pyproject.toml uv.lock* ./
 # Install core dependencies + web group using uv sync
 # --no-dev excludes dev dependencies, --group web includes the web dependency group
 COPY README.md .
-RUN uv sync --no-dev --group web
+RUN uv sync --all-groups
 
 # Copy application code
 COPY . .
